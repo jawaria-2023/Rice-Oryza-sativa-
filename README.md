@@ -9,44 +9,7 @@ This study looked at the genes that are active when the ROL barrier is forming i
 
 When the researchers checked the activity of specific genes related to suberin production using a method called semiquantitative reverse-transcription PCR, they confirmed that these genes were highly active during the formation of the ROL barrier. In conclusion, these findings suggest that suberin is a major component of the ROL barrier in rice roots.
 
-############################### R SCRIPT######################################
-#   Data plots for selected GEO samples
-library(GEOquery)
-library(limma)
-library(umap)
+Overall Design: Plant experiments involved 23-day-old plants, which were either kept in aerated solution or moved to solutions devoid of oxygen with nitrogen flushing for 9 hours. After subjecting the roots of plants to aeration, stagnant, or nitrogen-flushed conditions for 9 hours, the lower parts (12.5 - 22.5 mm below the root-shoot junction) of the adventitious roots were gathered. The cells in the outer part of the roots (including exodermis and sclerenchyma) were precisely isolated using laser microdissection. The RNA extracted from these isolated outer root parts was examined using a 44k rice oligo-DNA microarray. The total RNAs were labeled with a Quick Amp Labeling Kit from Agilent Technologies, following the manufacturer’s instructions. Portions of Cy5-labeled and Cy3-labeled cRNA (10 ng each) were employed for hybridization in a rice 44K oligo-DNA microarray.
 
-# load series and platform data from GEO
 
-gset <- getGEO("GSE58804", GSEMatrix =TRUE, getGPL=FALSE)
-if (length(gset) > 1) idx <- grep("GPL6864", attr(gset, "names")) else idx <- 1
-gset <- gset[[idx]]
-
-ex <- exprs(gset)
-# log2 transform
-qx <- as.numeric(quantile(ex, c(0., 0.25, 0.5, 0.75, 0.99, 1.0), na.rm=T))
-LogC <- (qx[5] > 100) ||
-          (qx[6]-qx[1] > 50 && qx[2] > 0)
-if (LogC) { ex[which(ex <= 0)] <- NaN
-  ex <- log2(ex) }
-
-# box-and-whisker plot
-par(mar=c(7,4,2,1))
-title <- paste ("GSE58804", "/", annotation(gset), sep ="")
-boxplot(ex, boxwex=0.7, notch=T, main=title, outline=FALSE, las=2)
-
-# expression value distribution plot
-par(mar=c(4,4,2,1))
-title <- paste ("GSE58804", "/", annotation(gset), " value distribution", sep ="")
-plotDensities(ex, main=title, legend=F)
-
-# mean-variance trend
-ex <- na.omit(ex) # eliminate rows with NAs
-plotSA(lmFit(ex), main="Mean variance trend, GSE58804")
-
-# UMAP plot (multi-dimensional scaling)
-ex <- ex[!duplicated(ex), ]  # remove duplicates
-ump <- umap(t(ex), n_neighbors = 8, random_state = 123)
-plot(ump$layout, main="UMAP plot, nbrs=8", xlab="", ylab="", pch=20, cex=1.5)
-library("maptools")  # point labels without overlaps
-pointLabel(ump$layout, labels = rownames(ump$layout), method="SANN", cex=0.6)
 
